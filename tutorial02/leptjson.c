@@ -17,24 +17,17 @@ static void lept_parse_whitespace(lept_context* c) {
 
 static int lept_parse_literal(lept_context* c, lept_value* v, const char* ch){
     int i = 0;
-    assert(ch != NULL);
     EXPECT(c, ch[0]);
-    while (ch[i + 1] != '\0'){
+    while (ch[i + 1] != '\0') {
         if (c->json[i] != ch[i + 1])  return LEPT_PARSE_INVALID_VALUE;
         ++i;
     }
     c->json += i;
-    switch (ch[0])
-    {
-    case 't':
-        v->type = LEPT_TRUE;
-        break;
-    case 'f':
-        v->type = LEPT_FALSE;
-        break;
-    default:
-        v->type = LEPT_NULL;
-        break;
+    switch (ch[0]) {
+    case 't': v->type = LEPT_TRUE;  break;
+    case 'f': v->type = LEPT_FALSE; break;
+    case 'n': v->type = LEPT_NULL;  break;
+    default : break;
     }
     return LEPT_PARSE_OK;
 }
@@ -42,6 +35,22 @@ static int lept_parse_literal(lept_context* c, lept_value* v, const char* ch){
 static int lept_parse_number(lept_context* c, lept_value* v) {
     char* end;
     /* \TODO validate number */
+    if (!(*c->json == '-' || (*c->json >= '0' && *c->json <= '9'))) {
+        return LEPT_PARSE_INVALID_VALUE;
+    }
+    else if (*c->json == '0') {
+        if (!(*(c->json + 1) == '.' || *(c->json + 1) == 'e' || *(c->json + 1) == 'E' || *(c->json + 1) == '\0'))
+            return LEPT_PARSE_ROOT_NOT_SINGULAR;
+    }
+    else {  /* \If invalid inside the parse */
+        const char *p = c->json;
+        while (*p != '\0') {
+            if (*p == '.') {
+                if (!(*(p + 1) >= '0' && *(p + 1) <= '9'))   return LEPT_PARSE_INVALID_VALUE;
+            }
+            ++p;
+        }
+    }
     v->n = strtod(c->json, &end);
     if (c->json == end)
         return LEPT_PARSE_INVALID_VALUE;
