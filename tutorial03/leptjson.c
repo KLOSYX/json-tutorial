@@ -134,10 +134,7 @@ static int lept_parse_string(lept_context* c, lept_value* v) {
                 }
                 break;
             default:
-                if (ch >= 0 && ch <= 31) {
-                    c->top = head;
-                    return LEPT_PARSE_INVALID_STRING_CHAR;
-                }
+                if (ch >= 0 && ch <= 31) return LEPT_PARSE_INVALID_STRING_CHAR;
                 PUTC(c, ch);
         }
     }
